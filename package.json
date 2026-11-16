@@ -1,6 +1,6 @@
 {
   "name": "chronix",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "engines": { "node": ">=24" },
@@ -8,6 +8,8 @@
     "start": "node --env-file-if-exists=.env server/index.js",
     "dev": "node --watch --env-file-if-exists=.env server/index.js",
     "test": "node --test --test-isolation=none",
-    "guide": "python docs/build_guide.py"
+    "guide": "python docs/build_guide.py",
+    "check:config": "node --env-file-if-exists=.env scripts/check-config.mjs",
+    "backup": "node --env-file-if-exists=.env scripts/backup.mjs"
   }
 }

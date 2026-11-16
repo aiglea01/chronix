@@ -1,0 +1,15 @@
+[Unit]
+Description=Consistent Chronix database backup
+
+[Service]
+Type=oneshot
+User=chronix
+Group=chronix
+EnvironmentFile=/etc/chronix/chronix.env
+ExecStart=@NODE@ /opt/chronix/current/scripts/backup.mjs /var/backups/chronix
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/backups/chronix

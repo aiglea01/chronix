@@ -106,11 +106,11 @@ def footer(canvas, doc):
     canvas.line(MARGIN, 45, WIDTH - MARGIN, 45)
     canvas.setFillColor(MUTED)
     canvas.setFont(SANS, 8)
-    canvas.drawString(MARGIN, 31, 'Chronix 0.1.0')
+    canvas.drawString(MARGIN, 31, 'Chronix 0.2.0')
     canvas.drawRightString(WIDTH - MARGIN, 31, str(doc.page).zfill(2))
 
 
-p('AGENDA PERSONAL  /  VERSIÓN 0.1.0', 'tag')
+p('AGENDA PERSONAL  /  VERSIÓN 0.2.0', 'tag')
 flow.append(Spacer(1, 57))
 p('Chronix', 'cover')
 p('Guía de desarrollo', 'subtitle')
@@ -224,7 +224,7 @@ section('3. Inicia el servidor con HTTPS delante', 'Ejecuta <font face="Courier"
 section('4. Haz una prueba de extremo a extremo', 'Crea una nota en un dispositivo y revisa que aparezca en el otro. Desactiva la red del primero, edítala, activa la red y comprueba otra vez. Abre un evento institucional en un mes donde sepas que existe. Instala la PWA desde el menú del navegador o desde Compartir en Safari.')
 p('El acceso real requiere tus credenciales OAuth y el permiso de Google Workspace si la universidad lo restringe. Con audiencia externa en pruebas, las autorizaciones de Calendar pueden caducar a los siete días. ' + link('Ver reglas de audiencia en Google Cloud', 'https://support.google.com/cloud/answer/15549945') + '.', 'callout')
 
-chapter(9, 'Sube el código y hazlo crecer', 'Chronix está en un repositorio local. GitHub sirve para revisar el código y su historia. El despliegue de Node y la base de datos viven en el alojamiento que elijas.')
+chapter(9, 'Sube el código y hazlo crecer', 'Chronix se mantiene en el repositorio privado aiglea01/chronix. GitHub sirve para revisar el código y su historia. El despliegue de Node y la base de datos viven en el alojamiento que elijas.')
 section('Una secuencia de commits para estudiar el código', '<b>1. Estructura y modelo.</b> Revisa package.json, .gitignore, .env.example, los contratos y las utilidades de fechas.<br/><b>2. Interfaz.</b> Agrupa public/index.html, estilos, iconos, app.js y las vistas.<br/><b>3. Persistencia y API.</b> Agrupa store.js y server/, que comparten el contrato de sincronización.<br/><b>4. Instalación, pruebas y guía.</b> Revisa el manifiesto, service worker, pruebas, README y docs.')
 section('Publica el historial que revisaste', 'Usa <font face="Courier">git add</font> con las rutas de cada bloque. Antes de cada commit, revisa <font face="Courier">git diff --cached</font>. Crea un repositorio vacío en GitHub, copia su URL y ponla en lugar del ejemplo. Los datos SQLite y el archivo .env aparecen en .gitignore.')
 code('''
@@ -235,10 +235,10 @@ git remote add origin https://github.com/TU_USUARIO/chronix.git
 git push -u origin main
 ''')
 section('Un cambio pequeño para practicar', 'Añade otro color al objeto <font face="Courier">colors</font> en model.js y su clase de estilo en styles.css. El selector del editor se genera desde esa lista. Comprueba que el nuevo color se vea en el filtro, los puntos del mes y los eventos de la agenda. Ejecuta las pruebas y haz un commit solo con ese cambio.')
-section('Estado de esta entrega', 'Las pruebas del servidor simulan Google y dos sesiones independientes. En el navegador se verificaron el guardado local, la importación JSON, el diseño a 390 px y la persistencia de AMOLED. Quedan por verificar el despliegue en tu servidor, los dispositivos físicos y los calendarios de tus cuentas.')
+section('Verificación funcional', 'Las pruebas del servidor simulan Google y dos sesiones independientes. En el navegador se verificaron el guardado local, la importación JSON, el diseño a 390 px y la persistencia de AMOLED. Las pruebas adicionales comprueban recuperación desde WAL, configuración protegida y refresco de calendarios solapados. Consulta docs/deployment-status.md para el estado real del servidor y del consentimiento de Google.')
 
-chapter(10, 'Aloja Chronix en tu servidor', 'El ejemplo usa Linux con systemd y Node.js 24 LTS. Encontrarás el archivo de servicio completo y los pasos de instalación en docs/self-hosting.md.')
-section('Monta la app como servicio', 'Copia <b>public/</b>, <b>server/</b> y <b>package.json</b> a /opt/chronix. El servicio ejecuta Node con una cuenta dedicada y carga las variables desde /etc/chronix/chronix.env. El directorio de datos /var/lib/chronix conserva la base SQLite entre actualizaciones.')
+chapter(10, 'Aloja Chronix en tu servidor', 'El despliegue usa Linux con systemd y Node.js 24 o posterior. Los scripts y la guía docs/self-hosting.md permiten instalar, actualizar y recuperar el servicio.')
+section('Monta la app como servicio', 'Ejecuta <b>deploy/install.sh</b> con sudo desde una copia del código. Primero valida configuración y pruebas; después instala una versión en /opt/chronix/releases y cambia el enlace current. Si la comprobación de salud falla, recupera la versión anterior. El servicio ejecuta Node con una cuenta dedicada y carga las variables desde /etc/chronix/chronix.env. El directorio de datos /var/lib/chronix conserva la base SQLite entre actualizaciones.')
 code('''
 HOST=127.0.0.1
 PORT=3000
@@ -246,9 +246,9 @@ DB_PATH=/var/lib/chronix/chronix.sqlite
 CHRONIX_OWNER_EMAIL=tu-cuenta-personal@gmail.com
 ''')
 section('Elige la dirección HTTPS', 'Con Tailscale Serve, instala Tailscale en tus dispositivos y ejecuta <font face="Courier">sudo tailscale serve --bg http://127.0.0.1:3000</font> en el servidor. La dirección queda dentro de tu red privada. Con Caddy, apunta un dominio a tu servidor, abre 80 y 443 hacia el proxy y reenvía ese dominio a 127.0.0.1:3000.')
-section('Completa Google OAuth', 'Pon el origen HTTPS definitivo en <font face="Courier">APP_URL</font> y registra ese mismo origen seguido de /auth/google/callback como URI de redirección. Añade ID, secreto y <font face="Courier">TOKEN_KEY</font> al archivo de entorno. La cuenta propietaria puede iniciar sesión y vincular otras cuentas de Calendar desde Ajustes.')
+section('Completa Google OAuth', 'El configurador scripts/configure-google.mjs lee el JSON de un cliente Web, verifica el callback y guarda los secretos con permisos 0600. Conserva TOKEN_KEY al repetir la configuración. Pon el origen HTTPS definitivo en <font face="Courier">APP_URL</font> y registra ese mismo origen seguido de /auth/google/callback como URI de redirección. Añade ID, secreto y <font face="Courier">TOKEN_KEY</font> al archivo de entorno. La cuenta propietaria puede iniciar sesión y vincular otras cuentas de Calendar desde Ajustes.')
 section('Comprueba la puesta en marcha', 'Desde el móvil con datos móviles, abre la URL, inicia sesión y crea una nota. Comprueba que aparece en el ordenador y que sigue disponible tras reiniciar Chronix. Si tienes datos en localhost, usa Exportar JSON allí e Importar JSON en el servidor.')
-p('Conserva una copia de SQLite y de TOKEN_KEY en un lugar protegido. El repositorio contiene código y ejemplos de configuración. La base de datos y el archivo con secretos se guardan en el servidor.', 'callout')
+p('chronix-backup.timer crea una copia diaria consistente de SQLite. El instalador guarda también una copia protegida de la configuración. Conserva ambas fuera del servidor y comprueba la recuperación. El repositorio no contiene secretos ni datos personales.', 'callout')
 
 OUTPUT.parent.mkdir(parents=True, exist_ok=True)
 doc = SimpleDocTemplate(str(OUTPUT), pagesize=A4, topMargin=64, bottomMargin=60,

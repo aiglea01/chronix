@@ -1,4 +1,4 @@
-const CACHE = 'chronix-shell-v3';
+const CACHE = 'chronix-shell-v4';
 const APP = [
   '/', '/index.html', '/styles.css', '/manifest.webmanifest', '/assets/chronix.svg', '/assets/chronix-192.png',
   '/assets/chronix-512.png', '/assets/chronix-maskable-512.png', '/js/app.js', '/js/store.js',

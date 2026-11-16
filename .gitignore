@@ -7,3 +7,10 @@ __pycache__/
 .venv/
 tmp/
 .DS_Store
+backups/
+releases/
+*.sqlite*
+client_secret*.json
+credentials*.json
+*.pem
+*.key

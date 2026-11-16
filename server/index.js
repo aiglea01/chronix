@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { createReadStream, statSync } from 'node:fs';
+import { createReadStream, readFileSync, statSync } from 'node:fs';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { googleAuth } from './auth.js';
@@ -7,6 +7,8 @@ import { openDatabase } from './db.js';
 import { calendarReader } from './google.js';
 import { body, HttpError, json } from './http.js';
 import { ownRecord, validId } from '../public/js/model.js';
+
+const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 
 const publicRoot = fileURLToPath(new URL('../public', import.meta.url));
 const mime = {
@@ -16,6 +18,7 @@ const mime = {
 
 export function configFromEnv(env = process.env) {
   const port = Number(env.PORT || 3000);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('PORT debe estar entre 1 y 65535.');
   const url = new URL(env.APP_URL || 'http://localhost:' + port);
   const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
   if (url.href !== url.origin + '/' || (url.protocol !== 'https:' && !(url.protocol === 'http:' && local))) {
@@ -25,6 +28,9 @@ export function configFromEnv(env = process.env) {
   const enabled = Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && key.length === 32);
   if (!enabled && (env.GOOGLE_CLIENT_ID || env.GOOGLE_CLIENT_SECRET || env.TOKEN_KEY)) {
     throw new Error('Completa GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET y TOKEN_KEY (32 bytes en Base64).');
+  }
+  if (env.NODE_ENV === 'production' && (!enabled || !url.origin.startsWith('https://'))) {
+    throw new Error('Producción requiere HTTPS y Google OAuth completo para sincronizar.');
   }
   const ownerEmail = env.CHRONIX_OWNER_EMAIL?.trim().toLowerCase() || '';
   if (ownerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ownerEmail)) {
@@ -84,6 +90,10 @@ export function createApp(config = configFromEnv()) {
     try {
       const url = new URL(req.url, config.origin);
       const { pathname: path, searchParams: search } = url;
+      if (req.method === 'GET' && path === '/healthz') {
+        store.db.prepare('SELECT 1').get();
+        return json(res, 200, { status: 'ok', version, syncEnabled: config.enabled });
+      }
       if (req.method === 'GET' && path === '/auth/google') {
         return auth.begin(req, res, search.get('mode') === 'connect' ? 'connect' : 'login');
       }
@@ -98,7 +108,7 @@ export function createApp(config = configFromEnv()) {
       }
       if (req.method === 'GET' && path === '/api/session') {
         const accounts = user ? auth.accounts(user.id).map(({ id, name, email }) => ({ id, name, email })) : [];
-        return json(res, 200, { user, accounts, enabled: config.enabled, calendarEnabled: config.enabled && config.calendarEnabled !== false });
+        return json(res, 200, { user, accounts, version, enabled: config.enabled, calendarEnabled: config.enabled && config.calendarEnabled !== false });
       }
       if (!user) throw new HttpError(401, 'Inicia sesión primero.');
       if (req.method === 'POST' && path === '/api/logout') {
@@ -136,4 +146,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const config = configFromEnv();
   const { server } = createApp(config);
   server.listen(config.port, config.host, () => console.log('Chronix · ' + config.origin));
+  const shutdown = () => {
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(1), 15000).unref();
+  };
+  process.once('SIGTERM', shutdown);
+  process.once('SIGINT', shutdown);
 }

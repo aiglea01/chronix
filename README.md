@@ -1,6 +1,12 @@
-# Chronix
+# Chronix 0.2.0
 
 Organizador personal con panel diario, calendarios, notas y relojes analógico y digital. La aplicación web progresiva (PWA) comparte código y datos entre móvil y escritorio una vez desplegada y configurada.
+
+## Servidor personal
+
+La instalación principal usa el servidor personal con Tailscale Serve. Sigue [la guía actualizada](docs/self-hosting.md) y consulta [el estado verificado](docs/deployment-status.md). El repositorio privado es [aiglea01/chronix](https://github.com/aiglea01/chronix).
+
+Esta versión incorpora configuración de Google desde su JSON, servicio systemd, despliegue con recuperación, copias consistentes de SQLite y comprobación de salud. `NODE_ENV=production` exige HTTPS y OAuth completo. Corrige también eventos eliminados que permanecían en ventanas solapadas de Google y conserva la caché ante errores temporales.
 
 ## Abrir en modo local
 
@@ -34,7 +40,7 @@ El navegador envía los cambios al guardarlos y consulta el servidor cada 15 seg
 
 Sigue la [guía de instalación en Linux](docs/self-hosting.md) para ejecutar Chronix con systemd, configurar acceso privado con Tailscale Serve o publicar un dominio HTTPS con Caddy. La guía incluye el modo de una sola cuenta y las copias de SQLite.
 
-### Primer despliegue en Render
+### Alternativa opcional: Render
 
 1. Sube el código a un repositorio de GitHub y conecta ese repositorio a **New → Web Service** en Render. Selecciona **Node**, una rama como `main`, **Build Command** `npm test` y **Start Command** `npm start`.
 2. Elige una instancia de pago y añade un **Persistent Disk** de 1 GB con punto de montaje `/var/data`. Usa una instancia. Render asigna `PORT` y expone una URL HTTPS.
@@ -78,21 +84,17 @@ El modo presentación funciona dentro de la app aunque el navegador no permita o
 
 Ejecuta `npm test`. Para regenerar la guía, activa un entorno virtual de Python, instala ReportLab con `python -m pip install reportlab` y ejecuta `npm run guide`.
 
-## Subir a GitHub
+## Desarrollo y publicación
 
-Crea un repositorio vacío en tu cuenta. En este directorio, revisa los archivos y crea tu primer commit antes de añadir el remoto:
+El repositorio de trabajo para los commits está en `/home/aalvaroiglesiass/Documents/otros/Chronix/chronix`. El remoto privado se publica por SSH. Cada cambio debe incluir un mensaje breve en inglés y las pruebas correspondientes; los commits reflejan trabajo real, sin fechas artificiales.
 
 ```sh
-git status --short
-git add .env.example .gitignore package.json README.md public server test docs output/pdf
-git diff --cached --stat
-git commit -m "Crea Chronix 0.1.0"
-git branch -M main
-git remote add origin https://github.com/TU_USUARIO/chronix.git
-git push -u origin main
+npm test
+npm run check:config
+bash scripts/package.sh /tmp/chronix.tar.gz
 ```
 
-La guía propone una secuencia de commits pequeños si prefieres revisar cada bloque por separado. Guarda copias del volumen SQLite con una herramienta de backup de SQLite o después de detener el servidor. Conserva `TOKEN_KEY` en el almacén de secretos para poder recuperar las conexiones a Google.
+`check:config` no muestra secretos. La guía de instalación explica cómo usar `scripts/configure-google.mjs`, `scripts/deploy.sh` y `deploy/install.sh`. GitHub Actions ejecuta las pruebas con Node 24 y 26 en cada push o pull request. El despliegue se realiza de forma explícita desde una máquina con acceso al servidor.
 
 ## Referencias
 

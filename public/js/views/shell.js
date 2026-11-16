@@ -140,6 +140,7 @@ export function settings(store, installable, hideSamples, showImport, theme) {
         ${store.google.warnings.map(warning => `<p class="warning">${h(warning)}</p>`).join('')}
       </section>` : ''}
       <section class="panel settings-panel"><h2>Aplicación</h2>
+        ${store.remote.version ? `<p>Chronix ${h(store.remote.version)}</p>` : ''}
         <div class="setting-row appearance-row"><strong>Apariencia</strong>
           <div class="segmented" role="group" aria-label="Tema">
             ${Object.entries(themes).map(([id, label]) => `<button data-action="theme" data-value="${id}"
