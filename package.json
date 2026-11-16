@@ -1,0 +1,13 @@
+{
+  "name": "chronix",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server/index.js",
+    "dev": "node --watch --env-file-if-exists=.env server/index.js",
+    "test": "node --test --test-isolation=none",
+    "guide": "python docs/build_guide.py"
+  }
+}

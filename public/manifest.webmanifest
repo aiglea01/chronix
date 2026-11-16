@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "Chronix",
+  "short_name": "Chronix",
+  "lang": "es",
+  "description": "Calendario, agenda diaria, notas y relojes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8f7f4",
+  "theme_color": "#f8f7f4",
+  "icons": [
+    {"src": "/assets/chronix-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/assets/chronix-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "/assets/chronix-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
