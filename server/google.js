@@ -105,7 +105,7 @@ export function calendarReader(auth) {
         if (auth.accounts(owner).map(account => account.revision).join() !== revision) {
           throw new HttpError(409, 'Las conexiones de Google cambiaron durante la consulta.');
         }
-        const value = { window, records: [...records.values()], warnings: [...warnings] };
+        const value = { window, records: [...records.values()], warnings: [...warnings], complete: warnings.size === 0 };
         for (const [id, entry] of cache) if (entry.expires <= Date.now()) cache.delete(id);
         if (cache.size >= 100) cache.delete(cache.keys().next().value);
         cache.set(key, { value, expires: Date.now() + ttl });

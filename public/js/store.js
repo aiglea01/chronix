@@ -147,19 +147,28 @@ export class Store {
   async refreshGoogle(from, to, force = false) {
     if (!this.profile || this.remote.calendarEnabled === false || !this.remote.accounts.length || this.providerLock) return false;
     const owner = this.owner;
+    const accounts = this.remote.accounts.map(account => account.id).sort().join(',');
     this.providerLock = true;
     try {
       const search = new URLSearchParams({ from, to, ...(force && { refresh: '1' }) });
       const response = await fetch('/api/google?' + search, { signal: AbortSignal.timeout(30000) });
       if (!response.ok) return false;
       const loaded = await response.json();
-      if (owner !== this.owner || this.remote.calendarEnabled === false) return false;
+      if (owner !== this.owner || this.remote.calendarEnabled === false ||
+          accounts !== this.remote.accounts.map(account => account.id).sort().join(',')) return false;
       const currentIds = new Set(loaded.records.map(item => item.id));
+      // Google incluye un día de margen en ambos extremos. Una respuesta completa
+      // sustituye también los eventos de ventanas solapadas, incluidos los borrados.
+      const windowStart = new Date(new Date(from).getTime() - 86400000).toISOString();
+      const windowEnd = new Date(new Date(to).getTime() + 86400000).toISOString();
+      const overlaps = item => item.allDay
+        ? item.start < windowEnd.slice(0, 10) && item.end > windowStart.slice(0, 10)
+        : item.start < windowEnd && item.end > windowStart;
       const next = {
         warnings: loaded.warnings,
         records: [
-          ...this.google.records.filter(item => item.type === 'event' && item.googleWindow !== loaded.window
-            && currentIds.has(item.calendarId) && !currentIds.has(item.id)),
+          ...this.google.records.filter(item => !currentIds.has(item.id) && (loaded.complete === false ||
+            (item.type === 'event' && !overlaps(item) && currentIds.has(item.calendarId)))),
           ...loaded.records.map(record => record.type === 'event' ? { ...record, googleWindow: loaded.window } : record)
         ]
       };
