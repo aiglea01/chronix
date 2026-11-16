@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { realpathSync } from 'node:fs';
 import { createReadStream, readFileSync, statSync } from 'node:fs';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -142,7 +143,7 @@ export function createApp(config = configFromEnv()) {
   return { server, ...store };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
   const config = configFromEnv();
   const { server } = createApp(config);
   server.listen(config.port, config.host, () => console.log('Chronix · ' + config.origin));
