@@ -37,13 +37,21 @@ export function configFromEnv(env = process.env) {
   if (ownerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ownerEmail)) {
     throw new Error('CHRONIX_OWNER_EMAIL debe ser una única dirección de correo.');
   }
+  const allowedEmails = (env.CHRONIX_ALLOWED_EMAILS || '').split(',')
+    .map(email => email.trim().toLowerCase()).filter(Boolean);
+  if (allowedEmails.some(email => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+    throw new Error('CHRONIX_ALLOWED_EMAILS debe contener correos separados por comas.');
+  }
+  if (allowedEmails.length && !ownerEmail) {
+    throw new Error('CHRONIX_ALLOWED_EMAILS requiere CHRONIX_OWNER_EMAIL.');
+  }
   const calendarEnabled = env.GOOGLE_CALENDAR_ENABLED?.trim().toLowerCase() || 'true';
   if (calendarEnabled !== 'true' && calendarEnabled !== 'false') {
     throw new Error('GOOGLE_CALENDAR_ENABLED debe ser true o false.');
   }
   return {
     port, host: env.HOST || '127.0.0.1', origin: url.origin, secure: url.protocol === 'https:',
-    clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET, key, enabled, ownerEmail,
+    clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET, key, enabled, ownerEmail, allowedEmails,
     calendarEnabled: calendarEnabled === 'true',
     dbPath: env.DB_PATH || './data/chronix.sqlite'
   };

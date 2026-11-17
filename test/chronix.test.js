@@ -5,6 +5,7 @@ import { asDay, dateKey, monthCells, onDay } from '../public/js/dates.js';
 import { backupChanges, starterCalendars, validRecord } from '../public/js/model.js';
 import { placeEvents } from '../public/js/views/calendar.js';
 import { openDatabase } from '../server/db.js';
+import { googleAuth } from '../server/auth.js';
 import { normalizeEvent } from '../server/google.js';
 import { configFromEnv, createApp } from '../server/index.js';
 
@@ -151,6 +152,16 @@ test('flujo HTTP con Google simulado: login, vinculación, agenda y cambio de di
   const denied = await authorize('login', '', privateApp.server);
   assert.match(denied.headers.Location, /auth=denied/);
   assert.equal(denied.headers['Set-Cookie'].length, 1);
+
+  const inviteConfig = { ...config, ownerEmail: user.email, allowedEmails: [profile.email] };
+  const invitedApp = createApp(inviteConfig);
+  t.after(() => invitedApp.db.close());
+  const invite = await authorize('login', '', invitedApp.server);
+  assert.match(invite.headers.Location, /auth=ok/);
+  const inviteCookie = invite.headers['Set-Cookie'][1].split(';')[0];
+  assert.equal((await request(invitedApp.server, '/api/session', { cookie: inviteCookie })).body.user.id, profile.id);
+  const updatedAuth = googleAuth(invitedApp.db, { ...inviteConfig, allowedEmails: [] });
+  assert.equal(updatedAuth.user({ headers: { cookie: inviteCookie } }), null);
 
   profile = user;
   const owner = await authorize('login', '', privateApp.server);

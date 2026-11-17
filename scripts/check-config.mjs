@@ -10,6 +10,7 @@ try {
   }
   console.log(JSON.stringify({ origin: config.origin, port: config.port, google: config.enabled,
     calendar: config.enabled && config.calendarEnabled, personal: Boolean(config.ownerEmail),
+    access: config.allowedEmails.length ? 'invite-only' : config.ownerEmail ? 'owner-only' : 'open',
     callback: config.origin + '/auth/google/callback' }, null, 2));
 } catch (error) {
   console.error(error.message);

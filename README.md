@@ -1,4 +1,6 @@
-# Chronix 0.2.0
+# Chronix 0.2.1
+
+Consulta [MEJORAS.md](MEJORAS.md) para probar esta versión.
 
 Organizador personal con panel diario, calendarios, notas y relojes analógico y digital. La aplicación web progresiva (PWA) comparte código y datos entre móvil y escritorio una vez desplegada y configurada.
 

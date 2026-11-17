@@ -25,7 +25,8 @@ export function googleAuth(db, config) {
   const deleteAccount = db.prepare('DELETE FROM google_accounts WHERE owner = ? AND id = ?');
   const redirectUri = config.origin + '/auth/google/callback';
   const sessionId = req => hash(cookieValue(req, SESSION_COOKIE));
-  const allowed = email => !config.ownerEmail || email.toLowerCase() === config.ownerEmail;
+  const allowedEmails = new Set([config.ownerEmail, ...(config.allowedEmails ?? [])].filter(Boolean));
+  const allowed = email => !allowedEmails.size || allowedEmails.has(email.toLowerCase());
   const user = req => {
     const profile = info.get(sessionId(req), Date.now());
     return profile && allowed(profile.email) ? profile : null;

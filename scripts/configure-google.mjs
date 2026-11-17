@@ -25,6 +25,7 @@ try {
   const values = {
     NODE_ENV: 'production', HOST: '127.0.0.1', PORT: options.port || previous.PORT || '3000', APP_URL: options.url,
     DB_PATH: '/var/lib/chronix/chronix.sqlite', CHRONIX_OWNER_EMAIL: options.owner,
+    ...(previous.CHRONIX_ALLOWED_EMAILS !== undefined && { CHRONIX_ALLOWED_EMAILS: previous.CHRONIX_ALLOWED_EMAILS }),
     GOOGLE_CALENDAR_ENABLED: 'true', GOOGLE_CLIENT_ID: credentials.client_id,
     GOOGLE_CLIENT_SECRET: credentials.client_secret,
     TOKEN_KEY: previous.TOKEN_KEY || randomBytes(32).toString('base64')
